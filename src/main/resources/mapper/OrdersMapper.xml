@@ -1,0 +1,336 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.OrdersMapper">
+
+<!--  -->
+ <select id="selectByExampleExtend" parameterType="com.pojo.OrdersExample" resultMap="BaseResultMapExtend">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from orders
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+ <select id="selectByPrimaryKeyExtend" parameterType="java.lang.Integer" resultMap="BaseResultMapExtend">
+    select 
+    <include refid="Base_Column_List" />
+    from orders
+    where oid = #{oid,jdbcType=INTEGER}
+  </select>
+  <resultMap id="BaseResultMapExtend" type="com.pojo.Orders">
+    <id column="oid" jdbcType="INTEGER" property="oid" />
+    <result column="total" jdbcType="DOUBLE" property="total" />
+    <result column="ordertime" jdbcType="TIMESTAMP" property="ordertime" />
+    <result column="state" jdbcType="INTEGER" property="state" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="phone" jdbcType="VARCHAR" property="phone" />
+    <result column="addr" jdbcType="VARCHAR" property="addr" />
+    <result column="uid" jdbcType="INTEGER" property="uid" />
+    <association property="user" javaType="com.pojo.User"
+    select="userSelect" column="uid">
+    </association>
+    <collection property="orderItemList" ofType="com.pojo.OrderItem"
+     select="orderItemListSelect" column="oid">
+    </collection>
+    
+  </resultMap>
+  
+  
+  <select id="orderItemListSelect" parameterType="java.lang.Integer"
+   resultType="com.pojo.OrderItem" resultMap="orderItemListSelectMap">
+       select * from orderitem where oid=#{oid}
+  </select>
+  <resultMap type="com.pojo.OrderItem" id="orderItemListSelectMap" >
+       <id column="itemid" property="itemid"/>
+       <result column="count" property="count"/>
+       <result column="subtotal" property="subtotal"/>
+       <result column="pid" property="pid"/>
+       <association property="product" javaType="com.pojo.Product"
+        select="productSelect" column="pid">
+       </association>
+  </resultMap>
+  <select id="userSelect" parameterType="java.lang.Integer" resultType="com.pojo.User">
+    select * from user where uid=#{uid}
+  </select>
+  
+  <select id="productSelect" parameterType="java.lang.Integer" resultType="com.pojo.Product" resultMap="productSelectMap">
+    select * from product where pid=#{pid}
+  </select> 
+   <resultMap id="productSelectMap" type="com.pojo.Product">
+    <id column="pid" jdbcType="INTEGER" property="pid" />
+    <result column="pname" jdbcType="VARCHAR" property="pname" />
+    <result column="market_price" jdbcType="DOUBLE" property="marketPrice" />
+    <result column="shop_price" jdbcType="DOUBLE" property="shopPrice" />
+    <result column="image" jdbcType="VARCHAR" property="image" />
+    <result column="pdesc" jdbcType="VARCHAR" property="pdesc" />
+    <result column="is_hot" jdbcType="INTEGER" property="isHot" />
+    <result column="pdate" jdbcType="TIMESTAMP" property="pdate" />
+    <result column="csid" jdbcType="INTEGER" property="csid" />
+  </resultMap>
+  
+<!--  -->
+
+  <resultMap id="BaseResultMap" type="com.pojo.Orders">
+    <id column="oid" jdbcType="INTEGER" property="oid" />
+    <result column="total" jdbcType="DOUBLE" property="total" />
+    <result column="ordertime" jdbcType="TIMESTAMP" property="ordertime" />
+    <result column="state" jdbcType="INTEGER" property="state" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="phone" jdbcType="VARCHAR" property="phone" />
+    <result column="addr" jdbcType="VARCHAR" property="addr" />
+    <result column="uid" jdbcType="INTEGER" property="uid" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    oid, total, ordertime, state, name, phone, addr, uid
+  </sql>
+  <select id="selectByExample" parameterType="com.pojo.OrdersExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from orders
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from orders
+    where oid = #{oid,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from orders
+    where oid = #{oid,jdbcType=INTEGER}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.pojo.OrdersExample">
+    delete from orders
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.pojo.Orders">
+    insert into orders (oid, total, ordertime, 
+      state, name, phone, 
+      addr, uid)
+    values (#{oid,jdbcType=INTEGER}, #{total,jdbcType=DOUBLE}, #{ordertime,jdbcType=TIMESTAMP}, 
+      #{state,jdbcType=INTEGER}, #{name,jdbcType=VARCHAR}, #{phone,jdbcType=VARCHAR}, 
+      #{addr,jdbcType=VARCHAR}, #{uid,jdbcType=INTEGER})
+  </insert>
+  <insert id="insertSelective" parameterType="com.pojo.Orders">
+    insert into orders
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="oid != null">
+        oid,
+      </if>
+      <if test="total != null">
+        total,
+      </if>
+      <if test="ordertime != null">
+        ordertime,
+      </if>
+      <if test="state != null">
+        state,
+      </if>
+      <if test="name != null">
+        name,
+      </if>
+      <if test="phone != null">
+        phone,
+      </if>
+      <if test="addr != null">
+        addr,
+      </if>
+      <if test="uid != null">
+        uid,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="oid != null">
+        #{oid,jdbcType=INTEGER},
+      </if>
+      <if test="total != null">
+        #{total,jdbcType=DOUBLE},
+      </if>
+      <if test="ordertime != null">
+        #{ordertime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="state != null">
+        #{state,jdbcType=INTEGER},
+      </if>
+      <if test="name != null">
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="phone != null">
+        #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="addr != null">
+        #{addr,jdbcType=VARCHAR},
+      </if>
+      <if test="uid != null">
+        #{uid,jdbcType=INTEGER},
+      </if>
+    </trim>
+    <selectKey keyProperty="oid" resultType="int" order="AFTER">
+     select @@identity
+    </selectKey>
+  </insert>
+  <select id="countByExample" parameterType="com.pojo.OrdersExample" resultType="java.lang.Long">
+    select count(*) from orders
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update orders
+    <set>
+      <if test="record.oid != null">
+        oid = #{record.oid,jdbcType=INTEGER},
+      </if>
+      <if test="record.total != null">
+        total = #{record.total,jdbcType=DOUBLE},
+      </if>
+      <if test="record.ordertime != null">
+        ordertime = #{record.ordertime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.state != null">
+        state = #{record.state,jdbcType=INTEGER},
+      </if>
+      <if test="record.name != null">
+        name = #{record.name,jdbcType=VARCHAR},
+      </if>
+      <if test="record.phone != null">
+        phone = #{record.phone,jdbcType=VARCHAR},
+      </if>
+      <if test="record.addr != null">
+        addr = #{record.addr,jdbcType=VARCHAR},
+      </if>
+      <if test="record.uid != null">
+        uid = #{record.uid,jdbcType=INTEGER},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update orders
+    set oid = #{record.oid,jdbcType=INTEGER},
+      total = #{record.total,jdbcType=DOUBLE},
+      ordertime = #{record.ordertime,jdbcType=TIMESTAMP},
+      state = #{record.state,jdbcType=INTEGER},
+      name = #{record.name,jdbcType=VARCHAR},
+      phone = #{record.phone,jdbcType=VARCHAR},
+      addr = #{record.addr,jdbcType=VARCHAR},
+      uid = #{record.uid,jdbcType=INTEGER}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.pojo.Orders">
+    update orders
+    <set>
+      <if test="total != null">
+        total = #{total,jdbcType=DOUBLE},
+      </if>
+      <if test="ordertime != null">
+        ordertime = #{ordertime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="state != null">
+        state = #{state,jdbcType=INTEGER},
+      </if>
+      <if test="name != null">
+        name = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="phone != null">
+        phone = #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="addr != null">
+        addr = #{addr,jdbcType=VARCHAR},
+      </if>
+      <if test="uid != null">
+        uid = #{uid,jdbcType=INTEGER},
+      </if>
+    </set>
+    where oid = #{oid,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.pojo.Orders">
+    update orders
+    set total = #{total,jdbcType=DOUBLE},
+      ordertime = #{ordertime,jdbcType=TIMESTAMP},
+      state = #{state,jdbcType=INTEGER},
+      name = #{name,jdbcType=VARCHAR},
+      phone = #{phone,jdbcType=VARCHAR},
+      addr = #{addr,jdbcType=VARCHAR},
+      uid = #{uid,jdbcType=INTEGER}
+    where oid = #{oid,jdbcType=INTEGER}
+  </update>
+</mapper>

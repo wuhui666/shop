@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd
+         http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+
+
+
+	<!-- 属性文件注解读取方式支持 -->
+	<bean id="propertyPlaceholderConfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<array>
+				<value>classpath:jdbc.properties</value>
+				<value>classpath:email-config.properties</value>
+
+			</array>
+
+		</property>
+	</bean>
+        
+     <!-- ===============数据源 ===================-->
+	<!-- <context:property-placeholder location="classpath:jdbc.properties" /> -->
+	<bean id="c3p0" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+		<property name="driverClass" value="${jdbc.driverClass}"></property>
+		<property name="jdbcUrl" value="${jdbc.jdbcUrl}"></property>
+		<property name="user" value="${jdbc.user}"></property>
+		<property name="password" value="${jdbc.password}"></property>
+	</bean>
+	<!-- ====================mybatis整合================ -->
+	
+	<bean id="sqlSessionFactoryBean" class="org.mybatis.spring.SqlSessionFactoryBean">
+	     <!-- 向bean(SqlSessionFactoryBean)注入configLocation属性指定mybatis配置文件位置，
+	          mybatis配置文件主要是typeAliases，settings,plugins，
+	                           环境（数据源，mapper位置）这里已经配好
+	      -->
+	    <property name="configLocation" value="classpath:mybatis-config.xml"></property>
+	    
+	    <!-- 向bean(SqlSessionFactoryBean)注入mapperLocations属性指定mapper.xml文件位置 -->
+	    <property name="mapperLocations" value="classpath:mapper/*.xml"></property>
+	    <!-- 关联数据源 -->
+	    <property name="dataSource" ref="c3p0"></property>
+	    
+	</bean>
+	<!-- 扫描mapper接口java文件自动创建为bean并加入spring容器，
+	             因为接口木有加service，controller注解（也不需要加）-->
+	<bean id="mapperScannerConfigurer" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+	    <!-- 指定mapper接口所在包 -->
+	    <property name="basePackage" value="com.dao"></property>
+	</bean>
+	<!-- 构建sqlsession -->
+	<bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+	    <!-- 只能构造注入属性值，属性木有set方法 -->
+	    <!-- 关联工厂 -->
+	    <constructor-arg name="sqlSessionFactory" ref="sqlSessionFactoryBean"></constructor-arg>
+	    <!-- 可选功能，但绝大多数需要批量操作-->
+	    <constructor-arg name="executorType" value="BATCH"></constructor-arg>
+	</bean>
+	<!-- ====================数据源事务管理================= -->
+	<!-- 数据源事务管理器 -->
+	<bean id="dataSourceTransactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+	    <property name="dataSource" ref="c3p0"></property>
+	
+	</bean>
+	<aop:config>
+	    <aop:pointcut expression="execution(* com.service..*(..))" id="cut"/>
+	    <aop:advisor advice-ref="advice" pointcut-ref="cut"/>
+	</aop:config>
+	<tx:advice transaction-manager="dataSourceTransactionManager" id="advice"> 
+	    <tx:attributes>
+	       <tx:method name="*" propagation="REQUIRES_NEW"/>
+	    </tx:attributes>
+	</tx:advice>
+	<context:component-scan base-package="com.*">
+	   <context:exclude-filter type="annotation" expression="com.controller"/>
+	</context:component-scan>
+	
+	
+	<bean id="captchaProducer" class="com.google.code.kaptcha.impl.DefaultKaptcha">
+	<property name="config">
+		<bean class="com.google.code.kaptcha.util.Config">
+			<constructor-arg>
+				<props>
+				    <prop key="kaptcha.background.clear.from">pink</prop>
+				    <prop key="kaptcha.background.clear.to">gray</prop>
+				    
+				    <prop key="kaptcha.noise.color">gray</prop>
+				    <prop key="kaptcha.obscurificator.impl">com.google.code.kaptcha.impl.ShadowGimpy</prop>
+					<prop key="kaptcha.border">no</prop>
+					<prop key="kaptcha.border.color">105,179,90</prop>
+					<prop key="kaptcha.textproducer.font.color">black</prop>
+					<prop key="kaptcha.image.width">90</prop>
+					<prop key="kaptcha.textproducer.font.size">30</prop>
+					<prop key="kaptcha.textproducer.char.space">3</prop>
+					<prop key="kaptcha.image.height">40</prop>
+					<prop key="kaptcha.session.key">SessionKey</prop>
+					<prop key="kaptcha.textproducer.char.length">4</prop>
+					<prop key="kaptcha.textproducer.font.names">宋体</prop>
+					<prop key="kaptcha.textproducer.char.string">0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ</prop>
+
+				</props>
+			</constructor-arg>
+		</bean>
+
+	</property>
+
+</bean>
+	
+    
+</beans>
